@@ -12,7 +12,7 @@ def get_folder_list():
     fp = open(folder_list_file, mode='r', encoding='utf-8')
     folder_list = []
     while True:
-        folder_path_temp = fp.readline().strip()
+        folder_path_temp = fp.readline().strip()        
         if not folder_path_temp: break
 
         if os.path.isdir(folder_path_temp):
@@ -79,7 +79,10 @@ def get_naver_info(folder_info):
                     prefix_info[prefix] = etc.get_text()
                 elif etc['href'].find(prefix) > 0 and '/bi/pi/basic' in prefix_info:
                     prefix_info[prefix] = prefix_info[prefix] + '.' + etc.get_text()
-
+        
+        if prefix_info['year'] == "":
+            continue
+            
         # 연도가 있음 비교하기
         if 'year' in prefix_info and (int(prefix_info['year']) < year - 1 or int(prefix_info['year']) > year + 1):
             continue
