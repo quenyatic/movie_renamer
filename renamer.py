@@ -28,7 +28,11 @@ def folder_parser(movie_folder):
     folder_parse_info = regex.findall(movie_folder)
 
     if len(folder_parse_info) == 0:
-        return {}
+        pattern = '([ㄱ-ㅎ|ㅏ-ㅣ|가-힣].*)(19\d{2}|20\d{2})'
+        regex = re.compile(pattern)
+        folder_parse_info = regex.findall(movie_folder)
+        if len(folder_parse_info) == 0:
+            return {}
 
     folder_info = {
         'year': int(folder_parse_info[0][1]),
@@ -37,7 +41,7 @@ def folder_parser(movie_folder):
     }
 
     if len(folder_info['title']) > 0 and folder_info['year'] > 1800 < 2200:
-        folder_info['search'] = quote_plus(folder_parse_info[0][0].strip(' '))
+        folder_info['search'] = quote_plus(folder_parse_info[0][0].strip(' ').encode('euc-kr'))
     else:
         folder_info = {}
 
@@ -51,6 +55,7 @@ def get_naver_info(folder_info):
 
     # 네이버에서 가져오기
     naver_movie_link = 'http://movie.naver.com/movie/search/result.nhn?section=movie&query=' + folder_info['search']
+    print(naver_movie_link)
 
     # 가져오기
     req = requests.get(naver_movie_link)
