@@ -1,6 +1,6 @@
 # renamer
 import requests
-import os
+import os, shutil
 import re
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urlencode, quote_plus
@@ -187,6 +187,36 @@ def main():
 
             print('')
 
+    # 폴더 내용 확인해서 장르 폴더에 넣기
+    folder_list = get_folder_list()
+
+    for movie_path in folder_list:
+        for movie_folder_name in os.listdir(movie_path):
+            origin_info = {
+                'path': movie_path,
+                'folder_name': movie_folder_name
+            }
+
+            regex = re.compile('\[(.*?)\]')
+            folder_parse_info = regex.findall(origin_info['folder_name'])
+            if (len(folder_parse_info) == 0 or len(folder_parse_info[0]) == 0):
+                continue
+            category_info = folder_parse_info[0].strip()
+            folder_name = category_info.split(' ')
+            if (len(folder_name[1]) == 0):
+                continue
+            
+            genre = folder_name[1]
+            genre_folder = origin_info['path'] + '000_정리' + os.sep + genre
+            if not(os.path.isdir(genre_folder)):
+                # 생성 폴더
+                os.makedirs(genre_folder)
+            
+            # 폴더 이동
+            origin_path = movie_path + movie_folder_name
+            move_path = genre_folder + os.sep + movie_folder_name
+            print('%s to %s' % (origin_path, move_path))
+            shutil.move(origin_path, move_path)
 
 if __name__ == "__main__":
     main()
