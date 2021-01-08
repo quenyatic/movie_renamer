@@ -5,6 +5,7 @@ import re
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urlencode, quote_plus
 import urllib.request
+from dotenv import load_dotenv
 
 
 def get_folder_list():
@@ -23,12 +24,12 @@ def get_folder_list():
 
 
 def folder_parser(movie_folder):
-    pattern = '([a-zA-Z0-9].*)(19\d{2}|20\d{2})'
+    pattern = '([a-zA-Z0-9].*)\.(19\d{2}|20\d{2})'
     regex = re.compile(pattern)
     folder_parse_info = regex.findall(movie_folder)
 
     if len(folder_parse_info) == 0:
-        pattern = '([ㄱ-ㅎ|ㅏ-ㅣ|가-힣].*)(19\d{2}|20\d{2})'
+        pattern = '([ㄱ-ㅎ|ㅏ-ㅣ|가-힣].*)\.(19\d{2}|20\d{2})'
         regex = re.compile(pattern)
         folder_parse_info = regex.findall(movie_folder)
         if len(folder_parse_info) == 0:
@@ -103,6 +104,9 @@ def get_naver_info(folder_info):
 
         if '/bi/pi/basic' not in prefix_info:
             prefix_info['/bi/pi/basic'] = ''
+        
+        if prefix_info['genre'].find('멜로') >= 0:
+            prefix_info['genre'] = '멜로'
 
         folder_name = ('[ %s %s %s ] %s' % (prefix_info['nation'], prefix_info['genre'], prefix_info['year'], title))
 
@@ -144,6 +148,9 @@ def set_renamer(origin_info, rename_info, key=0):
 
 
 def main():
+    load_dotenv()
+    CATEGORY_SORT = os.getenv('CATEGORY_SORT', 'off')
+
     # read folder list
     folder_list = get_folder_list()
 
@@ -188,35 +195,37 @@ def main():
             print('')
 
     # 폴더 내용 확인해서 장르 폴더에 넣기
-    folder_list = get_folder_list()
+    if (CATEGORY_SORT.lower() == 'on'):
+        print('category sort process start')
+        folder_list = get_folder_list()
 
-    for movie_path in folder_list:
-        for movie_folder_name in os.listdir(movie_path):
-            origin_info = {
-                'path': movie_path,
-                'folder_name': movie_folder_name
-            }
+        for movie_path in folder_list:
+            for movie_folder_name in os.listdir(movie_path):
+                origin_info = {
+                    'path': movie_path,
+                    'folder_name': movie_folder_name
+                }
 
-            regex = re.compile('\[(.*?)\]')
-            folder_parse_info = regex.findall(origin_info['folder_name'])
-            if (len(folder_parse_info) == 0 or len(folder_parse_info[0]) == 0):
-                continue
-            category_info = folder_parse_info[0].strip()
-            folder_name = category_info.split(' ')
-            if (len(folder_name[1]) == 0):
-                continue
-            
-            genre = folder_name[1]
-            genre_folder = origin_info['path'] + '000_정리' + os.sep + genre
-            if not(os.path.isdir(genre_folder)):
-                # 생성 폴더
-                os.makedirs(genre_folder)
-            
-            # 폴더 이동
-            origin_path = movie_path + movie_folder_name
-            move_path = genre_folder + os.sep + movie_folder_name
-            print('%s to %s' % (origin_path, move_path))
-            shutil.move(origin_path, move_path)
+                regex = re.compile('\[(.*?)\]')
+                folder_parse_info = regex.findall(origin_info['folder_name'])
+                if (len(folder_parse_info) == 0 or len(folder_parse_info[0]) == 0):
+                    continue
+                category_info = folder_parse_info[0].strip()
+                folder_name = category_info.split(' ')
+                if (len(folder_name[1]) == 0):
+                    continue
+                
+                genre = folder_name[1]
+                genre_folder = origin_info['path'] + '000_정리' + os.sep + genre
+                if not(os.path.isdir(genre_folder)):
+                    # 생성 폴더
+                    os.makedirs(genre_folder)
+                
+                # 폴더 이동
+                origin_path = movie_path + movie_folder_name
+                move_path = genre_folder + os.sep + movie_folder_name
+                print('%s to %s' % (origin_path, move_path))
+                shutil.move(origin_path, move_path)
 
 if __name__ == "__main__":
     main()
