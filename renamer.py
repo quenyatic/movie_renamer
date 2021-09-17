@@ -24,12 +24,13 @@ def get_folder_list():
 
 
 def folder_parser(movie_folder):
-    pattern = '([a-zA-Z0-9].*)\.(19\d{2}|20\d{2})'
+    pattern = '([a-zA-Z0-9].*)(19\d{2}|20\d{2})'
     regex = re.compile(pattern)
     folder_parse_info = regex.findall(movie_folder)
+    print(movie_folder)
 
     if len(folder_parse_info) == 0:
-        pattern = '([ㄱ-ㅎ|ㅏ-ㅣ|가-힣].*)\.(19\d{2}|20\d{2})'
+        pattern = '([ㄱ-ㅎ|ㅏ-ㅣ|가-힣].*)(19\d{2}|20\d{2})'
         regex = re.compile(pattern)
         folder_parse_info = regex.findall(movie_folder)
         if len(folder_parse_info) == 0:
@@ -37,12 +38,12 @@ def folder_parser(movie_folder):
 
     folder_info = {
         'year': int(folder_parse_info[0][1]),
-        'title': folder_parse_info[0][0],
+        'title': folder_parse_info[0][0].replace('.', ' '),
         'search': '',
     }
 
     if len(folder_info['title']) > 0 and folder_info['year'] > 1800 < 2200:
-        folder_info['search'] = quote_plus(folder_parse_info[0][0].strip(' ').encode('euc-kr'))
+        folder_info['search'] = quote_plus(folder_info['title'].strip(' ').encode('euc-kr'))
     else:
         folder_info = {}
 
