@@ -217,13 +217,13 @@ def main():
                     continue
                 
                 genre = folder_name[1]
-                genre_folder = origin_info['path'] + '000_정리' + os.sep + genre
+                genre_folder = origin_info['path'] + os.sep + '000_정리' + os.sep + genre
                 if not(os.path.isdir(genre_folder)):
                     # 생성 폴더
                     os.makedirs(genre_folder)
                 
                 # 폴더 이동
-                origin_path = movie_path + movie_folder_name
+                origin_path = movie_path + os.sep + movie_folder_name
                 move_path = genre_folder + os.sep + movie_folder_name
                 print('%s to %s' % (origin_path, move_path))
                 shutil.move(origin_path, move_path)
